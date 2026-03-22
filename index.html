@@ -374,7 +374,7 @@
   <a href="#supervisors" class="nav-drop-link">Supervisors</a>
   <a href="#guests" class="nav-drop-link">Guests</a>
   <a href="#agenda" class="nav-drop-link">Agenda</a>
-  <a href="https://forms.gle/7Q8QsqjrsNvuGWb26" target="_blank" class="nav-drop-link" style="color:var(--muted);opacity:0.5;cursor:not-allowed;pointer-events:none;">Registration Soon</a>
+  <a href="#vote" class="nav-drop-link" style="color:var(--purple);">Vote Now</a>
 </div>
 
 <!-- HERO -->
@@ -400,7 +400,7 @@
 
   <p class="hero-desc">A premier student-led medical conference uniting future healthcare leaders, researchers, and clinical innovators to explore the cutting edge of medicine and therapeutics.</p>
   <div class="hero-btns">
-    <a href="https://forms.gle/7Q8QsqjrsNvuGWb26" target="_blank" class="btn-grad" style="opacity:0.5;cursor:not-allowed;pointer-events:none;">Registration Soon</a>
+    <a href="#vote" class="btn-grad">Vote Now</a>
     <a href="#agenda" class="btn-ghost">View Agenda</a>
   </div>
   <!-- SPONSORS STRIP -->
@@ -876,6 +876,183 @@
     </div>
 
   </div>
+</section>
+
+<!-- VOTE SECTION -->
+<section class="sec sec-center" id="vote" style="background:var(--off);">
+  <span class="pill">Your Opinion Matters</span>
+  <h2 class="sec-title">Vote for <span class="grad-text">Best Presentation</span></h2>
+  <p class="sec-sub" style="margin:0 auto 2.5rem;">Cast your vote for the student presentation you found most impactful</p>
+
+  <div style="max-width:700px;margin:0 auto;">
+    <div id="vote-loading" style="color:var(--muted);font-size:0.9rem;padding:2rem;">Loading votes...</div>
+    <div id="vote-content" style="display:none;">
+      <div style="margin-bottom:1.5rem;">
+        <span id="vote-total-label" style="font-family:'Montserrat',sans-serif;font-size:0.8rem;font-weight:700;color:var(--muted);letter-spacing:0.05em;"></span>
+      </div>
+      <div id="vote-list"></div>
+      <div id="vote-notice" style="display:none;margin-top:1.5rem;background:linear-gradient(135deg,rgba(37,99,216,0.07),rgba(107,47,204,0.07));border-radius:14px;padding:1rem 1.5rem;font-size:0.88rem;color:var(--purple-deep);font-weight:600;">
+        ✅ You've already voted. Thank you!
+      </div>
+      <div style="margin-top:1.5rem;font-size:0.75rem;color:var(--muted);">One vote per device · Results update live</div>
+    </div>
+  </div>
+
+  <style>
+    .vcard {
+      background: #fff; border-radius: 18px; padding: 1.4rem 1.6rem;
+      margin-bottom: 1rem; border: 1px solid var(--border);
+      box-shadow: 0 2px 14px rgba(107,47,204,0.06);
+      text-align: left;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .vcard:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(107,47,204,0.11); }
+    .vcard-title { font-family:'Montserrat',sans-serif; font-size:0.97rem; font-weight:800; color:var(--text); margin-bottom:0.2rem; }
+    .vcard-author { font-size:0.8rem; color:var(--muted); margin-bottom:1rem; }
+    .vcard-row { display:flex; align-items:center; gap:1rem; }
+    .vbtn {
+      background: var(--grad); color:#fff; border:none;
+      padding:0.55rem 1.4rem; border-radius:50px;
+      font-family:'Montserrat',sans-serif; font-size:0.78rem; font-weight:700;
+      cursor:pointer; transition:opacity 0.2s, transform 0.2s;
+      white-space:nowrap; flex-shrink:0;
+    }
+    .vbtn:hover { opacity:0.85; transform:translateY(-1px); }
+    .vbtn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+    .vbtn.voted { background:linear-gradient(135deg,#22c55e,#16a34a); }
+    .vbar-wrap { flex:1; }
+    .vbar-label { display:flex; justify-content:space-between; font-size:0.75rem; color:var(--muted); margin-bottom:0.3rem; }
+    .vbar-bg { background:var(--off); border-radius:50px; height:8px; overflow:hidden; }
+    .vbar-fill { height:100%; border-radius:50px; background:var(--grad); transition:width 0.5s ease; }
+  </style>
+
+  <script>
+    const VOTE_PRESENTATIONS = [
+      { id: 'p1', title: 'Green Chemistry-Based Phyto-Serum for Enhancing Eyelash and Eyebrow Growth', author: 'Malak Mohamed', images: ['https://raw.githubusercontent.com/1vXility/Impactbsnu/master/Images/IMG-20260320-WA0041.jpg'] },
+      { id: 'p2', title: 'Finerenone VS SGLT2 Inhibitors in HF', author: 'Rawan ElDeep & Bassant Hesham', images: ['https://raw.githubusercontent.com/1vXility/Impactbsnu/master/Images/IMG_20260322_212546.jpg', 'https://raw.githubusercontent.com/1vXility/Impactbsnu/master/Images/IMG-20260320-WA0030.jpg'] },
+      { id: 'p3', title: 'Cytisine Chewing Gum for Smoking Cessation', author: 'Mariam Mahmoud Ahmed', images: ['https://raw.githubusercontent.com/1vXility/Impactbsnu/master/Images/IMG-20260320-WA0037.jpg'] },
+      { id: 'p4', title: 'The 130 KM "Midnight Road" to Remission: Rethinking Leukemia Care in Egypt', author: 'Ebrahim Ragab', images: ['https://raw.githubusercontent.com/1vXility/Impactbsnu/master/Images/IMG-20260320-WA0033.jpg'] },
+      { id: 'p5', title: 'Bridges of the Impossible: A Combined Approach to Neuro-Restoration', author: 'Ahmed M. Gaber', images: ['https://raw.githubusercontent.com/1vXility/Impactbsnu/master/Images/IMG-20260320-WA0034.jpg'] },
+      { id: 'p6', title: 'When Cancer Therapy Attacks the Heart: Myocarditis from Immune Checkpoint Inhibitors', author: 'Habiba Mohammed', images: ['https://raw.githubusercontent.com/1vXility/Impactbsnu/master/Images/IMG-20260320-WA0031.jpg'] },
+      { id: 'p7', title: 'Impact of Nanotechnology in Drug Delivery Systems', author: 'Rewan Ahmed', images: ['https://raw.githubusercontent.com/1vXility/Impactbsnu/master/Images/IMG-20260320-WA0040.jpg'] },
+      { id: 'p8', title: 'Impact of Hypoxia in the Tumor Microenvironment: A Systematic Review', author: 'Mahmoud Ahmed & Yousef Mohamed', images: ['https://raw.githubusercontent.com/1vXility/Impactbsnu/master/Images/IMG_20260302_194800.jpg', 'https://raw.githubusercontent.com/1vXility/Impactbsnu/master/Images/IMG_20260322_204405.jpg'] },
+      { id: 'p9', title: 'Aging Could Be Reversed', author: 'Abdullah Ayoup', images: ['https://raw.githubusercontent.com/1vXility/Impactbsnu/master/Images/IMG-20260320-WA0032.jpg'] },
+    ];
+
+    const BIN_ID = '69c04cddaa77b81da90b89d7';
+    const API_KEY = '$2a$10$ZlNOH0qNMk6VlG9uwBSeRuZBsYOeh7wy3QtVvIgD1GFCXb1xbcQie';
+    const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+    const VOTED_KEY = 'impact_voted';
+    const VOTED_ID_KEY = 'impact_voted_id';
+    let voteData = {};
+    let hasVoted = localStorage.getItem(VOTED_KEY) === 'true';
+    let votedId = localStorage.getItem(VOTED_ID_KEY);
+    let cacheTime = 0;
+
+    async function dbGet() {
+      try {
+        const res = await fetch(BIN_URL + '/latest', {
+          headers: { 'X-Master-Key': API_KEY }
+        });
+        const json = await res.json();
+        voteData = json.record || {};
+        cacheTime = Date.now();
+      } catch(e) {
+        VOTE_PRESENTATIONS.forEach(p => voteData[p.id] = 0);
+      }
+    }
+
+    async function dbSet(id, val) {
+      try {
+        const res = await fetch(BIN_URL + '/latest', {
+          headers: { 'X-Master-Key': API_KEY }
+        });
+        const json = await res.json();
+        const updated = { ...json.record, [id]: val };
+        await fetch(BIN_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+          body: JSON.stringify(updated)
+        });
+        voteData = updated;
+        cacheTime = Date.now();
+      } catch(e) {}
+    }
+
+    async function loadVotes() {
+      // Only fetch from JSONBin if cache is older than 30 seconds
+      const cached = localStorage.getItem('impact_votes_cache');
+      const cachedTime = parseInt(localStorage.getItem('impact_votes_cache_time') || '0');
+      if (cached && Date.now() - cachedTime < 30000) {
+        voteData = JSON.parse(cached);
+        VOTE_PRESENTATIONS.forEach(p => { if (!voteData[p.id]) voteData[p.id] = 0; });
+        renderVotes();
+        return;
+      }
+      await dbGet();
+      VOTE_PRESENTATIONS.forEach(p => { if (!voteData[p.id]) voteData[p.id] = 0; });
+      localStorage.setItem('impact_votes_cache', JSON.stringify(voteData));
+      localStorage.setItem('impact_votes_cache_time', Date.now().toString());
+      renderVotes();
+    }
+
+    function totalV() { return Object.values(voteData).reduce((a,b) => a+b, 0); }
+
+    async function castVote(id) {
+      if (hasVoted) return;
+      hasVoted = true;
+      votedId = id;
+      localStorage.setItem(VOTED_KEY, 'true');
+      localStorage.setItem(VOTED_ID_KEY, id);
+      voteData[id] = (voteData[id] || 0) + 1;
+      await dbSet(id, voteData[id]);
+      localStorage.setItem('impact_votes_cache', JSON.stringify(voteData));
+      localStorage.setItem('impact_votes_cache_time', Date.now().toString());
+      renderVotes();
+    }
+
+    function renderVotes() {
+      document.getElementById('vote-loading').style.display = 'none';
+      document.getElementById('vote-content').style.display = 'block';
+      const total = totalV();
+      document.getElementById('vote-total-label').textContent =
+        total === 0 ? 'No votes yet — be the first!' :
+        total === 1 ? '1 vote cast' : `${total} total votes cast`;
+
+      const list = document.getElementById('vote-list');
+      list.innerHTML = '';
+      VOTE_PRESENTATIONS.forEach(p => {
+        const count = voteData[p.id] || 0;
+        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+        const isMyVote = votedId === p.id;
+        const card = document.createElement('div');
+        card.className = 'vcard';
+        const imagesHtml = p.images ? `
+          <div style="display:flex;gap:0.5rem;margin-bottom:0.8rem;">
+            ${p.images.map(src => `<img src="${src}" style="width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--border);"/>`).join('')}
+          </div>` : '';
+        card.innerHTML = `
+          <div class="vcard-title">${p.title}</div>
+          ${imagesHtml}
+          <div class="vcard-author">${p.author}</div>
+          <div class="vcard-row">
+            <button class="vbtn ${isMyVote ? 'voted' : ''}" onclick="castVote('${p.id}')" ${hasVoted ? 'disabled' : ''}>
+              ${isMyVote ? '✓ Voted' : '👍 Vote'}
+            </button>
+            <div class="vbar-wrap">
+              <div class="vbar-label"><span>${count} vote${count !== 1 ? 's' : ''}</span><span>${pct}%</span></div>
+              <div class="vbar-bg"><div class="vbar-fill" style="width:${pct}%"></div></div>
+            </div>
+          </div>`;
+        list.appendChild(card);
+      });
+
+      if (hasVoted) document.getElementById('vote-notice').style.display = 'block';
+    }
+
+    loadVotes();
+  </script>
 </section>
 
 <!-- FOOTER -->
