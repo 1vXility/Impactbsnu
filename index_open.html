@@ -1132,9 +1132,8 @@
   </div>
 
   <script>
-    const API_KEY = '$2a$10$ZlNOH0qNMk6VlG9uwBSeRuZBsYOeh7wy3QtVvIgD1GFCXb1xbcQie';
-    const MED_BIN_URL   = 'https://api.jsonbin.io/v3/b/69c69e1fb7ec241ddcad1733';
-    const PHARM_BIN_URL = 'https://api.jsonbin.io/v3/b/69c69e48b7ec241ddcad1825';
+    const SUPABASE_URL = 'https://righbxocjtpzrmwfuwtm.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpZ2hieG9janRwenJtd2Z1d3RtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MTY3NDQsImV4cCI6MjA5MDE5Mjc0NH0.BLD3V_Ih9DrJz9ASSYw_isekmys343nRniLOHkPnCk0';
 
     const MED_PRESENTATIONS = [
       { id: 'm1', title: 'Finerenone VS SGLT2 Inhibitors in HF', author: 'Rawan ElDeep & Bassant Hesham', images: ['https://raw.githubusercontent.com/1vXility/Impactbsnu/master/Images/IMG_20260322_212546.jpg','https://raw.githubusercontent.com/1vXility/Impactbsnu/master/Images/IMG-20260320-WA0030.jpg'] },
@@ -1164,20 +1163,35 @@
 
     function totalOf(data) { return Object.values(data).reduce((a,b)=>a+b,0); }
 
-    async function dbGet(url) {
-      const res = await fetch(url + '/latest', { headers: { 'X-Master-Key': API_KEY } });
-      const json = await res.json();
-      return json.record || {};
+    const SB_HEADERS = {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    };
+
+    async function dbGet(category) {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/votes?category=eq.${category}&select=id,count`,
+        { headers: SB_HEADERS }
+      );
+      const rows = await res.json();
+      const data = {};
+      rows.forEach(r => { data[r.id] = r.count; });
+      return data;
     }
 
-    async function dbSet(url, id, currentRecord) {
-      const updated = { ...currentRecord, [id]: (currentRecord[id] || 0) + 1 };
-      await fetch(url, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
-        body: JSON.stringify(updated)
-      });
-      return updated;
+    async function sbIncrementVote(id) {
+      // Use a raw SQL RPC to safely increment
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/rpc/increment_vote`,
+        {
+          method: 'POST',
+          headers: SB_HEADERS,
+          body: JSON.stringify({ row_id: id })
+        }
+      );
+      return res.ok;
     }
 
     function renderCategory(presentations, data, listId, totalId, votedId, isPharm, hasVoted) {
@@ -1217,11 +1231,14 @@
       medHasVoted = true; medVotedId = id;
       localStorage.setItem(MED_VOTED_KEY, 'true');
       localStorage.setItem(MED_VOTED_ID, id);
-      try {
-        medData = await dbSet(MED_BIN_URL, id, medData);
-      } catch(e) { medData[id] = (medData[id]||0)+1; }
+      // Optimistic update
+      medData[id] = (medData[id] || 0) + 1;
       document.getElementById('med-voted-banner').style.display = 'block';
       renderCategory(MED_PRESENTATIONS, medData, 'med-vote-list', 'med-vote-total', medVotedId, false, true);
+      // Persist to Supabase
+      try {
+        await sbIncrementVote(id);
+      } catch(e) { console.warn('Vote save failed, kept local', e); }
     }
 
     async function castPharmVote(id) {
@@ -1229,16 +1246,19 @@
       pharmHasVoted = true; pharmVotedId = id;
       localStorage.setItem(PHARM_VOTED_KEY, 'true');
       localStorage.setItem(PHARM_VOTED_ID, id);
-      try {
-        pharmData = await dbSet(PHARM_BIN_URL, id, pharmData);
-      } catch(e) { pharmData[id] = (pharmData[id]||0)+1; }
+      // Optimistic update
+      pharmData[id] = (pharmData[id] || 0) + 1;
       document.getElementById('pharm-voted-banner').style.display = 'block';
       renderCategory(PHARM_PRESENTATIONS, pharmData, 'pharm-vote-list', 'pharm-vote-total', pharmVotedId, true, true);
+      // Persist to Supabase
+      try {
+        await sbIncrementVote(id);
+      } catch(e) { console.warn('Vote save failed, kept local', e); }
     }
 
     async function loadVotes() {
       try {
-        [medData, pharmData] = await Promise.all([dbGet(MED_BIN_URL), dbGet(PHARM_BIN_URL)]);
+        [medData, pharmData] = await Promise.all([dbGet('med'), dbGet('pharm')]);
       } catch(e) {
         MED_PRESENTATIONS.forEach(p => medData[p.id] = 0);
         PHARM_PRESENTATIONS.forEach(p => pharmData[p.id] = 0);
